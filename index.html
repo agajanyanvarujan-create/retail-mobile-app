@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="hy">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Իմ խանութը</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background: #f2f5f7;
+  margin: 0;
+  color: #222;
+}
+header {
+  background: #16865c;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+.container {
+  padding: 15px;
+}
+.card {
+  background: white;
+  padding: 15px;
+  margin: 12px 0;
+  border-radius: 12px;
+  box-shadow: 0 2px 6px #ddd;
+}
+button {
+  background: #16865c;
+  color: white;
+  border: none;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+input {
+  padding: 12px;
+  width: 90%;
+  margin: 6px 0;
+  border: 1px solid #ccc;
+  border-radius: 7px;
+}
+.price {
+  color: #16865c;
+  font-weight: bold;
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🛒 Իմ խանութը</h1>
+  <p>Փոքրածախ առևտրի կառավարման հավելված</p>
+</header>
+
+<div class="container">
+
+<div class="card">
+  <h2>📊 Վիճակագրություն</h2>
+  <p>Ապրանքների քանակը՝ <b id="count">0</b></p>
+  <p>Այսօրվա վաճառքները՝ <b id="sales">0</b> դրամ</p>
+</div>
+
+<div class="card">
+  <h2>➕ Ավելացնել ապրանք</h2>
+  <input id="name" placeholder="Ապրանքի անվանումը">
+  <input id="price" type="number" placeholder="Գինը՝ դրամով">
+  <input id="stock" type="number" placeholder="Քանակը">
+  <button onclick="addProduct()">Ավելացնել ապրանք</button>
+</div>
+
+<h2>📦 Ապրանքների ցանկ</h2>
+<div id="products"></div>
+
+</div>
+
+<script>
+let products = JSON.parse(localStorage.getItem("products")) || [
+  {name:"Հաց",price:300,stock:20},
+  {name:"Կաթ",price:600,stock:15},
+  {name:"Շաքարավազ",price:450,stock:12},
+  {name:"Ձեթ",price:900,stock:10},
+  {name:"Բրինձ",price:700,stock:8}
+];
+
+let sales = Number(localStorage.getItem("sales")) || 0;
+
+function save() {
+  localStorage.setItem("products", JSON.stringify(products));
+  localStorage.setItem("sales", sales);
+}
+
+function render() {
+  document.getElementById("count").textContent = products.length;
+  document.getElementById("sales").textContent =
+    sales.toLocaleString("hy-AM");
+
+  document.getElementById("products").innerHTML = products.map((p,i)=>`
+    <div class="card">
+      <h3>${p.name}</h3>
+      <p class="price">${p.price.toLocaleString("hy-AM")} դրամ</p>
+      <p>Մնացորդ՝ ${p.stock} հատ</p>
+      <button onclick="sell(${i})">Վաճառել 1 հատ</button>
+      <button onclick="removeProduct(${i})" style="background:#d64545">
+        Ջնջել
+      </button>
+    </div>
+  `).join("");
+}
+
+function addProduct() {
+  const name = document.getElementById("name").value.trim();
+  const price = Number(document.getElementById("price").value);
+  const stock = Number(document.getElementById("stock").value);
+
+  if (!name || price <= 0 || stock < 0 ||
+      document.getElementById("price").value === "" ||
+      document.getElementById("stock").value === "") {
+    alert("Լրացրու ապրանքի տվյալները ճիշտ ձևով։");
+    return;
+  }
+
+  products.push({name,price,stock});
+  save();
+  render();
+
+  document.getElementById("name").value = "";
+  document.getElementById("price").value = "";
+  document.getElementById("stock").value = "";
+}
+
+function sell(i) {
+  if (products[i].stock <= 0) {
+    alert("Ապրանքը պահեստում չկա։");
+    return;
+  }
+
+  products[i].stock--;
+  sales += products[i].price;
+  save();
+  render();
+  alert("Վաճառքը գրանցվեց։");
+}
+
+function removeProduct(i) {
+  if (confirm("Ջնջե՞լ այս ապրանքը։")) {
+    products.splice(i,1);
+    save();
+    render();
+  }
+}
+
+render();
+</script>
+
+</body>
+</html>
